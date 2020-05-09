@@ -1,0 +1,17 @@
+
+num=[1.151 0.1774];
+den=[1 0.739 0.921];             % Flight Plant Model 
+sys = ss(tf(num,den));
+Ts = 0.2;
+model = c2d(sys,Ts);
+m = setmpcsignals(model,'MV',1,'MD',2,'UD',3);
+mpcobj = mpc(model,Ts,10,3);
+mpcobj.MV = struct('Min',0,'Max',1,'RateMin',-0.8,'RateMax',0.8);
+mpcobj.Model.Disturbance = tf(sqrt(1000),[1 0]);
+Tstop = 30;                               % simulation time
+Tf = round(Tstop/Ts);                     % number of simulation steps
+r = ones(Tf,1);                           % reference signal
+v = [zeros(Tf/3,1);ones(2*Tf/3,1)];       % measured disturbance signal
+sim(mpcobj,Tf,r,v)
+
+
